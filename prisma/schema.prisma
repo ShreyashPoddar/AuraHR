@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Employee {
+  id         String   @id @default(cuid())
+  name       String
+  email      String   @unique
+  role       String
+  skills     String[]
+  department String
+  location   String
+  salary     Float    @default(0)
+  avatarUrl  String?
+  pan        String?
+  aadhar     String?
+  uan        String?
+  taxRegime  String?  @default("new")
+  state      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  activities Activity[]
+  payroll    PayrollRecord[]
+  taxDecl    TaxDeclaration[]
+}
+
+model Activity {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  action     String
+  status     String   @default("Done")
+  time       String
+  createdAt  DateTime @default(now())
+}
+
+model JobDescription {
+  id           String      @id @default(cuid())
+  title        String
+  department   String?
+  salaryBudget Float?      @default(0)
+  mustHave     String[]
+  niceToHave   String[]
+  softSkills   String[]
+  futureProof  String[]
+  active       Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  candidates   Candidate[]
+}
+
+model Candidate {
+  id                String          @id @default(cuid())
+  name              String
+  email             String?         @unique
+  role              String?         @default("Applicant")
+  skills            String[]
+  experience        Int?
+  education         String?
+  location          String?
+  resumeUrl         String?
+  matchPercent      Int?            @default(0)
+  matchTags         String[]
+  status            String          @default("Applied")
+  phone             String?
+  institute         String?
+  score             Json?           // Stores technical, culture, etc.
+  aiInterviewScore  Float?          @default(0)
+  academiaScore     Int?            @default(0)
+  salaryExpectation Float?          @default(0)
+  source            String?
+  gender            String?
+  academicAssessment Json?           // Stores AcademicAssessment structure
+  recruiterRating   Int?            @default(0)
+  recruiterFeedback String?
+  aiSummary         String?
+  
+  // Relations
+  jdId           String?
+  jobDescription JobDescription? @relation(fields: [jdId], references: [id])
+  interviews     Interview[]
+  proctoringLogs ProctoringLog[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Interview {
+  id              String    @id @default(cuid())
+  candidateId     String
+  candidate       Candidate @relation(fields: [candidateId], references: [id])
+  scheduledAt     DateTime
+  method          String    @default("video")
+  status          String    @default("scheduled")
+  meetingLink     String?
+  aiScore         Float?
+  aiFeedback      String?
+  createdAt       DateTime  @default(now())
+}
+
+model ProctoringLog {
+  id          String    @id @default(cuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id])
+  eventType   String    // TAB_SWITCH, NO_FACE, GAZE_AWAY
+  timestamp   DateTime  @default(now())
+  severity    String    @default("low")
+  metadata    String?   // JSON details
+}
+
+model PayrollRecord {
+  id               String   @id @default(cuid())
+  employeeId       String
+  employee         Employee @relation(fields: [employeeId], references: [id])
+  month            String
+  basic            Float
+  hra              Float
+  specialAllowance Float
+  gross            Float
+  epf              Float
+  pt               Float
+  tds              Float
+  net              Float
+  createdAt        DateTime @default(now())
+}
+
+model TaxDeclaration {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  section80C Float
+  section80D Float
+  hraRent    Float
+  createdAt  DateTime @default(now())
+}
+
+model MarketTrend {
+  id        String   @id @default(cuid())
+  skillName String   @unique
+  demand    Float
+  growth    Float
+  updatedAt DateTime @updatedAt
+}
+
+model GlobalConfig {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
